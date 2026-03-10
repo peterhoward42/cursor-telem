@@ -12,7 +12,7 @@
   already being present in the store
 
 
-## EventStorer interface
+## EventStorer interface signature
 
 ```
 StoreIfNotExist(evt *EventPayload, path string) error
@@ -20,7 +20,7 @@ StoreIfNotExist(evt *EventPayload, path string) error
 
 ## Building the path parameter for StoreIfNotExist
 
-- The path is built deterministically based on the EventPayload contents.
+- Build the path deterministically based on the EventPayload contents.
 - It encodes time buckets
 - It is derived from the time field inside the incoming Event.
 
