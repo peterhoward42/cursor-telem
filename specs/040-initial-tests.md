@@ -1,11 +1,11 @@
 # Writing the first few tests
 
-- This skill is for writing tests.
-- Tests must be designed according to the "tests-doctrine" skill.
+Use:
+- `test-writing`
+- `tests-rigour`
+- `test-isolation`
 
-## Instructions
-
-- Write unit tests for the storage path generator
-- Write units test for the POST payload validation
-- Write tests at the level of the Application methods for the end to end POST
-  handling
+Write tests for:
+- `buildEventPath`
+- POST payload validation
+- `Application::Ingest`
