@@ -1,6 +1,7 @@
 package function
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -14,10 +15,17 @@ func (e *erroringEventStorer) StoreIfNotExist(evt *EventPayload, path string) er
 	return errors.New("store failed")
 }
 
+type erroringEventGetter struct{}
+
+func (e *erroringEventGetter) GetStoredEvents() ([]*EventPayload, error) {
+	return nil, errors.New("get failed")
+}
+
 func newTestApplicationWithStorer(storer EventStorer) *Application {
 	return NewApplication(Dependencies{
 		EventStorer: storer,
 		EventGetter: NewFakeEventGetter(nil),
+		Analyser:    NewAnalyser(),
 	})
 }
 
@@ -28,7 +36,7 @@ func validEventJSON() string {
 func TestIngest_MethodNotAllowed(t *testing.T) {
 	app := newTestApplicationWithStorer(NewFakeEventStorer())
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req := httptest.NewRequest(http.MethodPut, "/", nil)
 	rr := httptest.NewRecorder()
 
 	app.Ingest(rr, req)
@@ -129,6 +137,103 @@ func TestIngest_NilEventStorerStillSucceeds(t *testing.T) {
 
 	if rr.Code != http.StatusNoContent {
 		t.Fatalf("status = %d, want %d", rr.Code, http.StatusNoContent)
+	}
+}
+
+func TestReport_GET_ReturnsReportJSON(t *testing.T) {
+	events := []*EventPayload{
+		{ProxyUserID: "u1", Event: EventLaunched},
+		{ProxyUserID: "u2", Event: EventLoadedExample},
+	}
+	app := NewApplication(Dependencies{
+		EventGetter: NewFakeEventGetter(events),
+		Analyser:    NewAnalyser(),
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	rr := httptest.NewRecorder()
+
+	app.Ingest(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", rr.Code, http.StatusOK)
+	}
+	if ct := rr.Header().Get("Content-Type"); ct != "application/json" {
+		t.Fatalf("Content-Type = %q, want application/json", ct)
+	}
+	expected := &Report{
+		HowManyPeopleHave: HowManyPeopleHave{
+			Launched:        1,
+			LoadedAnExample: 1,
+		},
+		TotalRecoverableErrors: 0,
+		TotalFatalErrors:       0,
+	}
+	var got Report
+	if err := json.Unmarshal(rr.Body.Bytes(), &got); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	assertReportEqual(t, &got, expected)
+}
+
+func TestReport_GET_EmptyStorage_ReturnsZeroReport(t *testing.T) {
+	app := NewApplication(Dependencies{
+		EventGetter: NewFakeEventGetter(nil),
+		Analyser:    NewAnalyser(),
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	rr := httptest.NewRecorder()
+
+	app.Ingest(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", rr.Code, http.StatusOK)
+	}
+	expected := &Report{
+		HowManyPeopleHave:     HowManyPeopleHave{},
+		TotalRecoverableErrors: 0,
+		TotalFatalErrors:       0,
+	}
+	var got Report
+	if err := json.Unmarshal(rr.Body.Bytes(), &got); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	assertReportEqual(t, &got, expected)
+}
+
+func TestReport_GET_EventGetterFails_ReturnsInternalServerError(t *testing.T) {
+	app := NewApplication(Dependencies{
+		EventGetter: &erroringEventGetter{},
+		Analyser:    NewAnalyser(),
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	rr := httptest.NewRecorder()
+
+	app.Ingest(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("status = %d, want %d", rr.Code, http.StatusInternalServerError)
+	}
+	if body := rr.Body.String(); !strings.Contains(body, "failed to get events") {
+		t.Fatalf("body = %q, want to contain %q", body, "failed to get events")
+	}
+}
+
+func TestReport_GET_NilEventGetter_ReturnsInternalServerError(t *testing.T) {
+	app := NewApplication(Dependencies{
+		EventGetter: nil,
+		Analyser:    NewAnalyser(),
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	rr := httptest.NewRecorder()
+
+	app.Ingest(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("status = %d, want %d", rr.Code, http.StatusInternalServerError)
 	}
 }
 

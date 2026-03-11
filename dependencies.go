@@ -23,6 +23,7 @@ type EventGetter interface {
 type Dependencies struct {
 	EventStorer EventStorer
 	EventGetter EventGetter
+	Analyser    *Analyser
 }
 
 // Application owns all request handling logic.
@@ -39,13 +40,46 @@ func NewApplication(deps Dependencies) *Application {
 	}
 }
 
-// Ingest handles POST requests containing a single EventPayload JSON body.
+// Ingest handles POST requests (store event) and GET requests (return report).
+// Other methods receive 405 Method Not Allowed.
 func (a *Application) Ingest(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	switch r.Method {
+	case http.MethodGet:
+		a.serveReport(w)
+		return
+	case http.MethodPost:
+		a.serveIngest(w, r)
+		return
+	default:
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
 	}
+}
 
+func (a *Application) serveReport(w http.ResponseWriter) {
+	if a.deps.EventGetter == nil || a.deps.Analyser == nil {
+		http.Error(w, "report not configured", http.StatusInternalServerError)
+		return
+	}
+	events, err := a.deps.EventGetter.GetStoredEvents()
+	if err != nil {
+		log.Printf("failed to get stored events: %v", err)
+		http.Error(w, "failed to get events", http.StatusInternalServerError)
+		return
+	}
+	report, err := a.deps.Analyser.Analyse(events)
+	if err != nil {
+		log.Printf("failed to analyse events: %v", err)
+		http.Error(w, "failed to analyse", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(report); err != nil {
+		log.Printf("failed to encode report: %v", err)
+	}
+}
+
+func (a *Application) serveIngest(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	var payload EventPayload

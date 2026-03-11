@@ -1,4 +1,4 @@
-# Implement a GET request handler
+# Implement a GET request handler wired up to report generation
 
 - Extend Application::Injest to also support a GET request
 - The GET request should:
