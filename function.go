@@ -2,20 +2,21 @@ package function
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 )
 
-// init is the composition root for the Cloud Function.
+// Register is the composition root for the Cloud Function.
 // It constructs production Dependencies and Application, then registers the HTTP function.
-func init() {
+// Call it explicitly from the process entrypoint (e.g. main); do not rely on init().
+func Register() error {
 	ctx := context.Background()
 
 	storageClient, err := storage.NewClient(ctx)
 	if err != nil {
-		log.Fatalf("failed to create storage client: %v", err)
+		return fmt.Errorf("create storage client: %w", err)
 	}
 
 	deps := Dependencies{
@@ -25,5 +26,6 @@ func init() {
 	app := NewApplication(deps)
 
 	functions.HTTP("Ingest", app.Ingest)
+	return nil
 }
 
