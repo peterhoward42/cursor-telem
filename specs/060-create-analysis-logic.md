@@ -1,7 +1,7 @@
 # Creating the analysis logic
 
 - Create an encapsulated "Analyser" that performs an analysis of a set of
-  given  EventPayload objects
+  given  *EventPayload objects
 - The analysis should yield the Report data structure defined below using the logic also
   defined below, or an error.
 - Write unit tests for the analyser
