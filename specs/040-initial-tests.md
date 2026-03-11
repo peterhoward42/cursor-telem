@@ -4,6 +4,7 @@ Use:
 - `test-writing`
 - `tests-rigour`
 - `test-isolation`
+- `dedupe-preemptive`
 
 Write tests for:
 - `buildEventPath`
