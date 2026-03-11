@@ -21,7 +21,7 @@ func Register() error {
 
 	deps := Dependencies{
 		EventStorer: NewGCSEventStorer(storageClient, "drawexact-telemetry"),
-		EventGetter: NewFakeEventGetter(nil),
+		EventGetter: NewGCSEventGetter(storageClient, "drawexact-telemetry"),
 		Analyser:    NewAnalyser(),
 	}
 	app := NewApplication(deps)
