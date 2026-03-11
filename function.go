@@ -26,7 +26,7 @@ func Register() error {
 	}
 	app := NewApplication(deps)
 
-	functions.HTTP("Ingest", app.Ingest)
+	functions.HTTP("Telemetry", app.Telemetry)
 	return nil
 }
 

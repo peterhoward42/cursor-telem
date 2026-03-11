@@ -9,4 +9,4 @@ Use:
 Write tests for:
 - `buildEventPath`
 - POST payload validation
-- `Application::Ingest`
+- `Application::Telemetry`

@@ -40,9 +40,9 @@ func NewApplication(deps Dependencies) *Application {
 	}
 }
 
-// Ingest handles POST requests (store event) and GET requests (return report).
+// Telemetry handles POST requests (store event) and GET requests (return report).
 // Other methods receive 405 Method Not Allowed.
-func (a *Application) Ingest(w http.ResponseWriter, r *http.Request) {
+func (a *Application) Telemetry(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		a.serveReport(w)

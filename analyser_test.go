@@ -43,7 +43,7 @@ func TestAnalyser_Analyse_OneEventPerType_CountsOneInEachBucket(t *testing.T) {
 		{ProxyUserID: "u3", Event: EventSignInStarted},
 		{ProxyUserID: "u4", Event: EventSignInSuccess},
 		{ProxyUserID: "u5", Event: EventCreatedNewDrawing},
-		{ProxyUserID: "u6", Event: EventRetreivedSaveDrawing},
+		{ProxyUserID: "u6", Event: EventRetrievedSaveDrawing},
 	}
 	a := NewAnalyser()
 
@@ -59,7 +59,7 @@ func TestAnalyser_Analyse_OneEventPerType_CountsOneInEachBucket(t *testing.T) {
 			TriedToSignIn:              1,
 			SucceededSigningIn:         1,
 			CreatedTheirOwnDrawing:     1,
-			RetreivedTheirASavedDrawing: 1,
+			RetrievedTheirASavedDrawing: 1,
 		},
 		TotalRecoverableErrors: 0,
 		TotalFatalErrors:       0,
@@ -181,7 +181,7 @@ func assertReportEqual(t *testing.T, got, want *Report) {
 	if h.Launched != w.Launched || h.LoadedAnExample != w.LoadedAnExample ||
 		h.TriedToSignIn != w.TriedToSignIn || h.SucceededSigningIn != w.SucceededSigningIn ||
 		h.CreatedTheirOwnDrawing != w.CreatedTheirOwnDrawing ||
-		h.RetreivedTheirASavedDrawing != w.RetreivedTheirASavedDrawing {
+		h.RetrievedTheirASavedDrawing != w.RetrievedTheirASavedDrawing {
 		t.Errorf("HowManyPeopleHave: got %+v, want %+v", h, w)
 	}
 	if got.TotalRecoverableErrors != want.TotalRecoverableErrors {

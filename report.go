@@ -7,7 +7,7 @@ type HowManyPeopleHave struct {
 	TriedToSignIn              int `json:"TriedToSignIn"`
 	SucceededSigningIn         int `json:"SucceededSigningIn"`
 	CreatedTheirOwnDrawing     int `json:"CreatedTheirOwnDrawing"`
-	RetreivedTheirASavedDrawing int `json:"RetreivedTheirASavedDrawing"`
+	RetrievedTheirASavedDrawing int `json:"RetreivedTheirASavedDrawing"`
 }
 
 // Report is the result of analysing a set of event payloads.

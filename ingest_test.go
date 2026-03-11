@@ -33,26 +33,26 @@ func validEventJSON() string {
 	return `{"schemaVersion":0,"eventULID":"01ARZ3NDEKTSV4RRFFQ69G5FAV","proxyUserID":"123e4567-e89b-42d3-a456-426614174000","timeUTC":"2025-03-10T11:22:33Z","visit":1,"event":"view","parameters":"param"}`
 }
 
-func TestIngest_MethodNotAllowed(t *testing.T) {
+func TestTelemetry_MethodNotAllowed(t *testing.T) {
 	app := newTestApplicationWithStorer(NewFakeEventStorer())
 
 	req := httptest.NewRequest(http.MethodPut, "/", nil)
 	rr := httptest.NewRecorder()
 
-	app.Ingest(rr, req)
+	app.Telemetry(rr, req)
 
 	if rr.Code != http.StatusMethodNotAllowed {
 		t.Fatalf("status = %d, want %d", rr.Code, http.StatusMethodNotAllowed)
 	}
 }
 
-func TestIngest_InvalidJSON_ReturnsBadRequest(t *testing.T) {
+func TestTelemetry_InvalidJSON_ReturnsBadRequest(t *testing.T) {
 	app := newTestApplicationWithStorer(NewFakeEventStorer())
 
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"schemaVersion":`))
 	rr := httptest.NewRecorder()
 
-	app.Ingest(rr, req)
+	app.Telemetry(rr, req)
 
 	if rr.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want %d", rr.Code, http.StatusBadRequest)
@@ -63,7 +63,7 @@ func TestIngest_InvalidJSON_ReturnsBadRequest(t *testing.T) {
 	}
 }
 
-func TestIngest_InvalidPayload_ReturnsBadRequest(t *testing.T) {
+func TestTelemetry_InvalidPayload_ReturnsBadRequest(t *testing.T) {
 	app := newTestApplicationWithStorer(NewFakeEventStorer())
 
 	// eventULID is too short to satisfy the validation tag.
@@ -72,7 +72,7 @@ func TestIngest_InvalidPayload_ReturnsBadRequest(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(body))
 	rr := httptest.NewRecorder()
 
-	app.Ingest(rr, req)
+	app.Telemetry(rr, req)
 
 	if rr.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want %d", rr.Code, http.StatusBadRequest)
@@ -83,14 +83,14 @@ func TestIngest_InvalidPayload_ReturnsBadRequest(t *testing.T) {
 	}
 }
 
-func TestIngest_ValidPayload_StoresEventAndReturnsNoContent(t *testing.T) {
+func TestTelemetry_ValidPayload_StoresEventAndReturnsNoContent(t *testing.T) {
 	storer := NewFakeEventStorer()
 	app := newTestApplicationWithStorer(storer)
 
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(validEventJSON()))
 	rr := httptest.NewRecorder()
 
-	app.Ingest(rr, req)
+	app.Telemetry(rr, req)
 
 	if rr.Code != http.StatusNoContent {
 		t.Fatalf("status = %d, want %d", rr.Code, http.StatusNoContent)
@@ -110,13 +110,13 @@ func TestIngest_ValidPayload_StoresEventAndReturnsNoContent(t *testing.T) {
 	}
 }
 
-func TestIngest_StoreFailureReturnsInternalServerError(t *testing.T) {
+func TestTelemetry_StoreFailureReturnsInternalServerError(t *testing.T) {
 	app := newTestApplicationWithStorer(&erroringEventStorer{})
 
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(validEventJSON()))
 	rr := httptest.NewRecorder()
 
-	app.Ingest(rr, req)
+	app.Telemetry(rr, req)
 
 	if rr.Code != http.StatusInternalServerError {
 		t.Fatalf("status = %d, want %d", rr.Code, http.StatusInternalServerError)
@@ -127,13 +127,13 @@ func TestIngest_StoreFailureReturnsInternalServerError(t *testing.T) {
 	}
 }
 
-func TestIngest_NilEventStorerStillSucceeds(t *testing.T) {
+func TestTelemetry_NilEventStorerStillSucceeds(t *testing.T) {
 	app := NewApplication(Dependencies{})
 
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(validEventJSON()))
 	rr := httptest.NewRecorder()
 
-	app.Ingest(rr, req)
+	app.Telemetry(rr, req)
 
 	if rr.Code != http.StatusNoContent {
 		t.Fatalf("status = %d, want %d", rr.Code, http.StatusNoContent)
@@ -153,7 +153,7 @@ func TestReport_GET_ReturnsReportJSON(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rr := httptest.NewRecorder()
 
-	app.Ingest(rr, req)
+	app.Telemetry(rr, req)
 
 	if rr.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d", rr.Code, http.StatusOK)
@@ -185,7 +185,7 @@ func TestReport_GET_EmptyStorage_ReturnsZeroReport(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rr := httptest.NewRecorder()
 
-	app.Ingest(rr, req)
+	app.Telemetry(rr, req)
 
 	if rr.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d", rr.Code, http.StatusOK)
@@ -211,7 +211,7 @@ func TestReport_GET_EventGetterFails_ReturnsInternalServerError(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rr := httptest.NewRecorder()
 
-	app.Ingest(rr, req)
+	app.Telemetry(rr, req)
 
 	if rr.Code != http.StatusInternalServerError {
 		t.Fatalf("status = %d, want %d", rr.Code, http.StatusInternalServerError)
@@ -230,7 +230,7 @@ func TestReport_GET_NilEventGetter_ReturnsInternalServerError(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rr := httptest.NewRecorder()
 
-	app.Ingest(rr, req)
+	app.Telemetry(rr, req)
 
 	if rr.Code != http.StatusInternalServerError {
 		t.Fatalf("status = %d, want %d", rr.Code, http.StatusInternalServerError)

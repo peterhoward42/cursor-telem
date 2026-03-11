@@ -7,7 +7,7 @@ const (
 	EventSignInStarted         = "sign-in-started"
 	EventSignInSuccess         = "sign-in-success"
 	EventCreatedNewDrawing     = "created-new-drawing"
-	EventRetreivedSaveDrawing  = "retreived-save-drawing"
+	EventRetrievedSaveDrawing  = "retreived-save-drawing"
 	EventRecoverableJSError    = "recoverable-javascript-error"
 	EventFatalJSError          = "fatal-javascript-error"
 )
@@ -28,7 +28,7 @@ func (a *Analyser) Analyse(events []*EventPayload) (*Report, error) {
 	triedSignIn := make(map[string]struct{})
 	succeededSignIn := make(map[string]struct{})
 	createdDrawing := make(map[string]struct{})
-	retreivedDrawing := make(map[string]struct{})
+	retrievedDrawing := make(map[string]struct{})
 	var recoverableErrors, fatalErrors int
 
 	for _, evt := range events {
@@ -47,8 +47,8 @@ func (a *Analyser) Analyse(events []*EventPayload) (*Report, error) {
 			succeededSignIn[uid] = struct{}{}
 		case EventCreatedNewDrawing:
 			createdDrawing[uid] = struct{}{}
-		case EventRetreivedSaveDrawing:
-			retreivedDrawing[uid] = struct{}{}
+		case EventRetrievedSaveDrawing:
+			retrievedDrawing[uid] = struct{}{}
 		case EventRecoverableJSError:
 			recoverableErrors++
 		case EventFatalJSError:
@@ -65,7 +65,7 @@ func (a *Analyser) Analyse(events []*EventPayload) (*Report, error) {
 			TriedToSignIn:              len(triedSignIn),
 			SucceededSigningIn:         len(succeededSignIn),
 			CreatedTheirOwnDrawing:     len(createdDrawing),
-			RetreivedTheirASavedDrawing: len(retreivedDrawing),
+			RetrievedTheirASavedDrawing: len(retrievedDrawing),
 		},
 		TotalRecoverableErrors: recoverableErrors,
 		TotalFatalErrors:       fatalErrors,

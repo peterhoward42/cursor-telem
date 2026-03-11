@@ -24,4 +24,3 @@ func encodeEventToGzippedNDJSON(evt *EventPayload) ([]byte, error) {
 
 	return buf.Bytes(), nil
 }
-
