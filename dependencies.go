@@ -13,10 +13,16 @@ type EventStorer interface {
 	StoreIfNotExist(evt *EventPayload, path string) error
 }
 
+// EventGetter retrieves stored events for analysis and reporting.
+type EventGetter interface {
+	GetStoredEvents() ([]*EventPayload, error)
+}
+
 // Dependencies aggregates all external systems required by the application.
 // Start empty and add fields only when needed.
 type Dependencies struct {
 	EventStorer EventStorer
+	EventGetter EventGetter
 }
 
 // Application owns all request handling logic.

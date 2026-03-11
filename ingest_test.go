@@ -15,7 +15,10 @@ func (e *erroringEventStorer) StoreIfNotExist(evt *EventPayload, path string) er
 }
 
 func newTestApplicationWithStorer(storer EventStorer) *Application {
-	return NewApplication(Dependencies{EventStorer: storer})
+	return NewApplication(Dependencies{
+		EventStorer: storer,
+		EventGetter: NewFakeEventGetter(nil),
+	})
 }
 
 func validEventJSON() string {

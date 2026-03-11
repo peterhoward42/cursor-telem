@@ -7,6 +7,7 @@ import "github.com/GoogleCloudPlatform/functions-framework-go/functions"
 func init() {
 	deps := Dependencies{
 		EventStorer: NewFakeEventStorer(),
+		EventGetter: NewFakeEventGetter(nil),
 	}
 	app := NewApplication(deps)
 
