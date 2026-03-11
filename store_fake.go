@@ -1,11 +1,5 @@
 package function
 
-import (
-	"bytes"
-	"compress/gzip"
-	"encoding/json"
-)
-
 // FakeEventStorer is an in-memory, test-double implementation of EventStorer.
 // It stores gzip-compressed NDJSON representations of events keyed by path.
 type FakeEventStorer struct {
@@ -26,21 +20,12 @@ func (s *FakeEventStorer) StoreIfNotExist(evt *EventPayload, path string) error 
 		return nil
 	}
 
-	var buf bytes.Buffer
-
-	gw := gzip.NewWriter(&buf)
-	encoder := json.NewEncoder(gw)
-
-	if err := encoder.Encode(evt); err != nil {
-		gw.Close()
+	data, err := encodeEventToGzippedNDJSON(evt)
+	if err != nil {
 		return err
 	}
 
-	if err := gw.Close(); err != nil {
-		return err
-	}
-
-	s.data[path] = buf.Bytes()
+	s.data[path] = data
 	return nil
 }
 
