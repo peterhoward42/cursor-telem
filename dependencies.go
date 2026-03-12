@@ -80,7 +80,11 @@ func (a *Application) serveReport(w http.ResponseWriter) {
 }
 
 func (a *Application) serveIngest(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	defer func() {
+		if err := r.Body.Close(); err != nil {
+			log.Printf("failed to close request body: %v", err)
+		}
+	}()
 
 	var payload EventPayload
 

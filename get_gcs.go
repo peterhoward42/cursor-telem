@@ -57,7 +57,9 @@ func (g *GCSEventGetter) readEvent(ctx context.Context, obj *storage.ObjectHandl
 	if err != nil {
 		return nil, err
 	}
-	defer r.Close()
+	defer func() {
+		_ = r.Close()
+	}()
 
 	var payload EventPayload
 	if err := json.NewDecoder(r).Decode(&payload); err != nil && err != io.EOF {

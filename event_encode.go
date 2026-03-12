@@ -14,7 +14,9 @@ func encodeEventToGzippedNDJSON(evt *EventPayload) ([]byte, error) {
 	encoder := json.NewEncoder(gw)
 
 	if err := encoder.Encode(evt); err != nil {
-		gw.Close()
+		if closeErr := gw.Close(); closeErr != nil {
+			return nil, closeErr
+		}
 		return nil, err
 	}
 
