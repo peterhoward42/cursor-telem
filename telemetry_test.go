@@ -236,4 +236,3 @@ func TestReport_GET_NilEventGetter_ReturnsInternalServerError(t *testing.T) {
 		t.Fatalf("status = %d, want %d", rr.Code, http.StatusInternalServerError)
 	}
 }
-
